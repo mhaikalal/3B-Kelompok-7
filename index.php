@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
         </div>
     <?php endif; ?>
 
-    <h3>Daftar Antrean Saat Ini (Queue)</h3>
+    <h3>Daftar Antrean Saat Ini</h3>
     <div class="antrean-box">
         <?php if (empty($_SESSION['antrean'])): ?>
             <p>Tidak ada antrean.</p>
