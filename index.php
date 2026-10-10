@@ -1,5 +1,19 @@
 <?php
+date_default_timezone_set('Asia/Jakarta');
 session_start();
+
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'pengunjung'], true)) {
+    $_SESSION['role'] = 'admin';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'])) {
+    $role = $_POST['role'];
+    if (in_array($role, ['admin', 'pengunjung'], true)) {
+        $_SESSION['role'] = $role;
+    }
+}
+
+$is_admin = $_SESSION['role'] === 'admin';
 
 // untuk inisialisasi queue antrean jika belum ada
 if (!isset($_SESSION['antrean'])) {
@@ -9,6 +23,10 @@ if (!isset($_SESSION['antrean'])) {
 // untuk inisialisasi nomor antrean saat ini
 if (!isset($_SESSION['nomor_terpanggil'])) {
     $_SESSION['nomor_terpanggil'] = 0;
+}
+
+if (!isset($_SESSION['nama_terpanggil'])) {
+    $_SESSION['nama_terpanggil'] = '';
 }
 
 // ini buat ambil nomor antrean baru
@@ -26,15 +44,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ambil'])) {
 
 // Proses reset antrean
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset'])) {
-    $_SESSION['antrean'] = [];
-    $_SESSION['nomor_terpanggil'] = 0;
-    $pesan = "Antrean berhasil direset.";
+    if ($is_admin) {
+        $_SESSION['antrean'] = [];
+        $_SESSION['nomor_terpanggil'] = 0;
+        $_SESSION['nama_terpanggil'] = '';
+        $pesan = "Antrean berhasil direset.";
+    } else {
+        $pesan = "Hanya admin yang dapat mereset antrean.";
+    }
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['panggil'])) {
-    if (!empty($_SESSION['antrean'])) {
+    if (!$is_admin) {
+        $pesan_panggil = "Hanya admin yang dapat memanggil nomor antrean.";
+    } elseif (!empty($_SESSION['antrean'])) {
         // Dequeue: ambil dari depan array (FIFO)
         $terpanggil = array_shift($_SESSION['antrean']);
         $_SESSION['nomor_terpanggil'] = $terpanggil['nomor'];
+        $_SESSION['nama_terpanggil'] = $terpanggil['nama'];
         $pesan_panggil = "Memanggil nomor antrean: {$terpanggil['nomor']} - {$terpanggil['nama']}";
     } else {
         $pesan_panggil = "Tidak ada antrean yang tersisa.";
@@ -86,11 +112,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
             backdrop-filter: blur(8px);
         }
 
+        .header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
         h1 {
-            margin-bottom: 5px;
+            margin: 0;
             color: #006064;
             font-weight: 800;
             letter-spacing: -1px;
+        }
+
+        .role-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-form label {
+            color: #4a6b6e;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .role-select {
+            width: auto;
+            padding: 8px 12px;
+            border: 1px solid #b2dfdb;
+            border-radius: 8px;
+            background: #fff;
+            color: #006064;
+            font: inherit;
         }
 
         .subtitle {
@@ -266,6 +322,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
             color: #7f8c8d;
             font-size: 14px;
         }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 22px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
     </style>
     <script>
         async function playTingTung(event) {
@@ -295,13 +366,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
 </head>
 <body>
 <div class="container">
-    <h1><i class='bx bx-clinic'></i> Antrean Klinik</h1>
+    <header class="header">
+        <h1><i class='bx bx-clinic'></i> Antrean Klinik</h1>
+        <form method="post" class="role-form">
+            <label for="role">Role:</label>
+            <select id="role" name="role" class="role-select" onchange="this.form.submit()">
+                <option value="admin" <?= $_SESSION['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                <option value="pengunjung" <?= $_SESSION['role'] === 'pengunjung' ? 'selected' : '' ?>>Pengunjung</option>
+            </select>
+        </form>
+    </header>
 
-    <?php if (!empty($pesan_panggil)): ?>
+    <?php if ($_SESSION['nomor_terpanggil'] > 0): ?>
         <div class="card card-panggil">
             <p class="label-kecil">Nomor Terpanggil</p>
             <div class="nomor-besar"><?= $_SESSION['nomor_terpanggil'] ?></div>
-            <p class="pesan-panggil"><?= htmlspecialchars($pesan_panggil) ?></p>
+            <p class="pesan-panggil">Pasien: <?= htmlspecialchars($_SESSION['nama_terpanggil']) ?></p>
         </div>
     <?php endif; ?>
     <?php if (!empty($pesan)): ?><div class="pesan pesan-ok"><?= htmlspecialchars($pesan) ?></div><?php endif; ?>
@@ -314,13 +394,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
         <button type="submit" name="ambil" class="btn btn-ambil"><i class='bx bx-plus-circle'></i> Ambil Nomor Antrean</button>
     </form>
 
-    <form method="post" class="form-spaced">
-        <button type="submit" name="reset" class="btn btn-reset"><i class='bx bx-refresh'></i> Reset Antrean</button>
-    </form>
+    <?php if ($is_admin): ?>
+        <form method="post" class="form-spaced">
+            <button type="submit" name="reset" class="btn btn-reset"><i class='bx bx-refresh'></i> Reset Antrean</button>
+        </form>
 
-    <form method="post" class="form-spaced">
-        <button type="submit" name="panggil" class="btn btn-panggil" onclick="playTingTung(event);"><i class='bx bx-bell'></i> Panggil Nomor Berikutnya</button>
-    </form>
+        <form method="post" class="form-spaced">
+            <button type="submit" name="panggil" class="btn btn-panggil" onclick="playTingTung(event);"><i class='bx bx-bell'></i> Panggil Nomor Berikutnya</button>
+        </form>
+    <?php endif; ?>
 
     <form method="post" class="form-spaced">
         <label for="cari-nomor" class="label-cari">Cari Nomor:</label>
