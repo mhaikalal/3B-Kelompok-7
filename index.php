@@ -1,17 +1,4 @@
 <?php
-/*
- * Aplikasi Antrean Klinik - Tugas Algoritma Pertemuan 5-6
- * Struktur Data: Queue (antrean) menggunakan array PHP
- * Algoritma: Linear Search untuk mencari nomor antrean
- *
- * Penjelasan Struktur Data:
- * - $antrean adalah array yang berfungsi sebagai Queue (FIFO: First In First Out)
- * - Setiap elemen array menyimpan array asosiatif: ['nomor' => int, 'nama' => string, 'waktu' => string]
- * - Operasi enqueue: array_push() menambahkan ke akhir
- * - Operasi dequeue: array_shift() mengambil dari depan
- * - Operasi search: loop linear mencari berdasarkan nomor antrean
- */
-
 session_start();
 
 // Inisialisasi queue antrean jika belum ada
@@ -77,37 +64,231 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
     <title>Antrean Klinik</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600;800&display=swap');
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #e8f6f3; min-height: 100vh; padding: 30px; margin: 0; }
-        .container { max-width: 800px; margin: auto; background: rgba(255,255,255,0.95); padding: 35px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); backdrop-filter: blur(8px); }
-        h1 { color: #006064; font-weight: 800; letter-spacing: -1px; margin-bottom: 5px; }
-        .subtitle { color: #4a6b6e; font-size: 15px; margin-bottom: 25px; }
-        .card { background: #fff; border: 1px solid #e0f2f1; border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,150,136,0.05); }
-        .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all .2s; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        .btn-ambil { background: #00b894; color: white; }
-        .btn-ambil:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,184,148,0.3); }
-        .btn-panggil { background: #e17055; color: white; }
-        .btn-panggil:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(225,112,85,0.3); }
-        .btn-cari { background: #0984e3; color: white; }
-        input { padding: 10px 14px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 15px; width: 60%; transition: border-color .2s; }
-        input:focus { border-color: #00b894; outline: none; }
-        .antrean-box { background: #f8f9fa; padding: 20px; border-radius: 14px; border-left: 5px solid #00b894; }
-        .item { padding: 12px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
-        .item:last-child { border-bottom: none; }
-        .badge { background: #00b894; color: white; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 13px; }
-        .pesan { padding: 14px; border-radius: 10px; margin: 12px 0; font-weight: 500; }
-        .pesan-ok { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
-        .pesan-info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; }
-        .nomor-besar { font-size: 72px; font-weight: 800; color: #e17055; text-align: center; letter-spacing: -4px; }
-        .label-kecil { text-align: center; color: #636e72; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 30px;
+            background: #e8f6f3;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 35px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: #006064;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            margin-bottom: 25px;
+            color: #4a6b6e;
+            font-size: 15px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #e0f2f1;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 150, 136, 0.05);
+        }
+
+        .card-panggil {
+            text-align: center;
+            background: #fff5e6;
+        }
+
+        .pesan-panggil {
+            margin-top: 10px;
+            color: #d35400;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-ambil {
+            color: white;
+            background: #00b894;
+        }
+
+        .btn-ambil:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-panggil {
+            color: white;
+            background: #e17055;
+        }
+
+        .btn-panggil:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(225, 112, 85, 0.3);
+        }
+
+        .btn-cari {
+            color: white;
+            background: #0984e3;
+        }
+
+        .btn-reset {
+            color: white;
+            background: #636e72;
+        }
+
+        input {
+            width: 60%;
+            padding: 10px 14px;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #00b894;
+            outline: none;
+        }
+
+        .input-pasien,
+        .input-cari {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .input-pasien {
+            width: 60%;
+        }
+
+        .input-cari {
+            width: 60%;
+        }
+
+        .label-cari {
+            display: block;
+        }
+
+        .form-spaced {
+            margin-top: 10px;
+        }
+
+        .antrean-box {
+            padding: 20px;
+            border-left: 5px solid #00b894;
+            border-radius: 14px;
+            background: #f8f9fa;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            background: #00b894;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .pesan {
+            margin: 12px 0;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .pesan-ok {
+            border-left: 4px solid #2e7d32;
+            color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .pesan-info {
+            border-left: 4px solid #1565c0;
+            color: #1565c0;
+            background: #e3f2fd;
+        }
+
+        .nomor-besar {
+            color: #e17055;
+            font-size: 72px;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: -4px;
+        }
+
+        .label-kecil {
+            color: #636e72;
+            font-size: 13px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nomor-terakhir {
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
     </style>
     <script>
-        // Suara ting-ting saat tombol panggil ditekan
-        function playTingTung() {
-            var audio = new Audio('assets/audio/Announcement sound effect.mp3');
+        async function playTingTung(event) {
+            event.preventDefault();
+
+            const button = event.currentTarget;
+            const form = button.form;
+            const audio = new Audio(new URL('assets/audio/Announcement%20sound%20effect.mp3', document.baseURI));
             audio.volume = 1.0;
-            audio.play();
-            return true;
+
+            try {
+                const playbackEnded = new Promise((resolve, reject) => {
+                    audio.addEventListener('ended', resolve, { once: true });
+                    audio.addEventListener('error', () => reject(audio.error || new Error('File audio tidak dapat dimuat.')), { once: true });
+                });
+                await audio.play();
+                await playbackEnded;
+            } catch (error) {
+                console.error('Suara panggilan gagal diputar:', error);
+                window.alert('Suara panggilan tidak dapat diputar. Pemanggilan antrean tetap dilanjutkan.');
+            }
+
+            form.requestSubmit(button);
         }
     </script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -117,10 +298,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
     <h1><i class='bx bx-clinic'></i> Antrean Klinik</h1>
 
     <?php if (!empty($pesan_panggil)): ?>
-        <div class="card" style="text-align:center; background: #fff5e6;">
+        <div class="card card-panggil">
             <p class="label-kecil">Nomor Terpanggil</p>
             <div class="nomor-besar"><?= $_SESSION['nomor_terpanggil'] ?></div>
-            <p style="font-size:18px; color:#d35400; font-weight:600; margin-top:10px;"><?= htmlspecialchars($pesan_panggil) ?></p>
+            <p class="pesan-panggil"><?= htmlspecialchars($pesan_panggil) ?></p>
         </div>
     <?php endif; ?>
     <?php if (!empty($pesan)): ?><div class="pesan pesan-ok"><?= htmlspecialchars($pesan) ?></div><?php endif; ?>
@@ -129,22 +310,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
 
     <form method="post">
         <label>Nama Pasien:</label><br>
-        <input type="text" name="nama_pasien" placeholder="Masukkan nama" style="padding:8px; width: 60%; border-radius:4px; border:1px solid #ccc;">
+        <input type="text" name="nama_pasien" placeholder="Masukkan nama" class="input-pasien">
         <button type="submit" name="ambil" class="btn btn-ambil"><i class='bx bx-plus-circle'></i> Ambil Nomor Antrean</button>
     </form>
 
-    <form method="post" style="margin-top:10px;">
-        <button type="submit" name="reset" class="btn" style="background:#636e72; color:white;"><i class='bx bx-refresh'></i> Reset Antrean</button>
+    <form method="post" class="form-spaced">
+        <button type="submit" name="reset" class="btn btn-reset"><i class='bx bx-refresh'></i> Reset Antrean</button>
     </form>
 
-    <form method="post" style="margin-top:10px;">
-        <button type="submit" name="panggil" class="btn btn-panggil" onclick="playTingTung();"><i class='bx bx-bell'></i> Panggil Nomor Berikutnya</button>
+    <form method="post" class="form-spaced">
+        <button type="submit" name="panggil" class="btn btn-panggil" onclick="playTingTung(event);"><i class='bx bx-bell'></i> Panggil Nomor Berikutnya</button>
     </form>
 
-    <form method="post" style="margin-top:10px;">
-        <label>Cari Nomor:</label>
-        <input type="number" name="cari_nomor" placeholder="Nomor antrean" style="padding:8px; width: 40%; border-radius:4px; border:1px solid #ccc;">
-        <button type="submit" name="cari" class="btn btn-cari"><i class='bx bx-search'></i> Cari (Linear Search)</button>
+    <form method="post" class="form-spaced">
+        <label for="cari-nomor" class="label-cari">Cari Nomor:</label>
+        <input type="number" id="cari-nomor" name="cari_nomor" placeholder="Nomor antrean" class="input-cari">
+        <button type="submit" name="cari" class="btn btn-cari"><i class='bx bx-search'></i> Cari</button>
     </form>
 
     <?php if ($hasil_cari): ?>
@@ -166,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
         <?php endif; ?>
     </div>
 
-    <p style="margin-top:20px; color:#7f8c8d; font-size:14px;">
+    <p class="nomor-terakhir">
         Nomor terakhir terpanggil: <strong><?= $_SESSION['nomor_terpanggil'] ?></strong>
     </p>
 </div>
