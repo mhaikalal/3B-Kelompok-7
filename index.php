@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'])) {
 
 $is_admin = $_SESSION['role'] === 'admin';
 
-// untuk inisialisasi queue antrean jika belum ada
+// untuk inisialisasi queye antrean jika belum ada
 if (!isset($_SESSION['antrean'])) {
     $_SESSION['antrean'] = [];
 }
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['panggil'])) {
     }
 }
 
-// Linear Search: mencari nomor antrean tertentu
+// (linear search) mencari nomor antrean tertentu
 $hasil_cari = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
     $cari_nomor = (int) ($_POST['cari_nomor'] ?? 0);
