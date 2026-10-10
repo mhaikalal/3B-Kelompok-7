@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cari'])) {
     <script>
         // Suara ting-ting saat tombol panggil ditekan
         function playTingTung() {
-            var audio = new Audio('klinik_antrean/assets/audio/audioAjah.mpeg');
+            var audio = new Audio('assets/audio/Announcement sound effect.mp3');
             audio.volume = 1.0;
             audio.play();
             return true;
