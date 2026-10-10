@@ -1,17 +1,17 @@
 <?php
 session_start();
 
-// Inisialisasi queue antrean jika belum ada
+// untuk inisialisasi queue antrean jika belum ada
 if (!isset($_SESSION['antrean'])) {
     $_SESSION['antrean'] = [];
 }
 
-// Inisialisasi nomor antrean saat ini
+// untuk inisialisasi nomor antrean saat ini
 if (!isset($_SESSION['nomor_terpanggil'])) {
     $_SESSION['nomor_terpanggil'] = 0;
 }
 
-// Proses ambil nomor antrean baru
+// ini buat ambil nomor antrean baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ambil'])) {
     $nama = trim($_POST['nama_pasien'] ?? 'Pasien');
     $nomor_baru = count($_SESSION['antrean']) + 1;
